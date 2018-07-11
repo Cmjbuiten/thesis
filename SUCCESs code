@@ -1,0 +1,712 @@
+---
+title: "Supplement to master thesis Christiaan Buiten (375997)"
+# author: "Christiaan Buiten 375997"
+output: 
+  html_notebook:
+    toc: yes
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
+---
+##*Pushing the appeal of posts on social media; modelling messages that "stick"*
+Please find the supplement code of the master thesis in this document:
+
+* **It includes**
+    + Kappa measures for the pre-test.
+    + Graphs for the steady state process.
+    + All the developed models.
+
+#Pre-test Kappa measures
+###Load packages
+```{r}
+library(dplyr)
+library(tidyverse)
+library(caret)
+library(irr)
+```
+
+###Simple
+Demographics: 10 males, 11 LinkedIn users, 3 females
+```{r warning=FALSE,message=FALSE,error=FALSE, results = 'hide'}
+
+##Load dataset
+library(readr)
+SimpleKappa<- read_csv("C://Users/Jimmy/Documents/SimpleKappa.csv")
+
+##Do calculation
+Sikappa <-kappam.fleiss(SimpleKappa, detail = TRUE)
+
+
+```
+
+###Unexpected
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+##Load dataset
+UnexpectedKappa<- read_csv("C://Users/Jimmy/Documents/UnexpectedKappa.csv")
+
+##Do calculation
+Ukappa1 <-kappam.fleiss(UnexpectedKappa[1:4,], detail = TRUE)
+Ukappa2 <-kappam.fleiss(UnexpectedKappa[5:8,], detail = TRUE)
+
+
+```
+
+
+###Credible
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+##Load dataset
+CredibleKappa<- read_csv("C://Users/Jimmy/Documents/CredibleKappa.csv")
+
+##Do calculation
+kappam.fleiss(CredibleKappa, detail = TRUE)
+
+Crkappa1 <- kappam.fleiss(CredibleKappa[1:4,], detail = TRUE)
+Crkappa2 <- kappam.fleiss(CredibleKappa[5:8,], detail = TRUE)
+
+
+```
+
+###Concrete
+Demographics: 13 LinkedIn users, 9 males, 6 females
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+
+
+##Load dataset
+ConcreteKappa<- read_csv("C://Users/Jimmy/Documents/ConcreteKappa.csv")
+
+##Do calculation
+kappam.fleiss(ConcreteKappa, detail = TRUE)
+
+Cokappa1 <- kappam.fleiss(ConcreteKappa[1:4,], detail = TRUE)
+Cokappa2 <- kappam.fleiss(ConcreteKappa[5:8,], detail = TRUE)
+
+
+```
+
+###Emotional
+Demographics: 13 linkedin users, 6 males, 8 females.
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+##Load dataset
+EmotionalKappa<- read_csv("C://Users/Jimmy/Documents/EmotionalKappa.csv")
+
+##Do calculation
+kappam.fleiss(EmotionalKappa, detail = TRUE)
+
+Ekappa1 <- kappam.fleiss(EmotionalKappa[1:4,], detail = TRUE)
+Ekappa2 <- kappam.fleiss(EmotionalKappa[5:8,], detail = TRUE)
+
+
+
+```
+
+###Story
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+##Load dataset
+StoryKappa<- read_csv("C://Users/Jimmy/Documents/StoryKappa.csv")
+
+##Do calculation
+Stkappa <- kappam.fleiss(StoryKappa, exact = TRUE, detail = TRUE)
+
+
+```
+
+###Kappa calculations
+```{r warning=FALSE,message=FALSE,error=FALSE}
+Sikappa
+Ukappa1
+Ukappa2
+Cokappa1
+Cokappa2
+Crkappa1
+Crkappa2
+Ekappa1
+Ekappa2
+Stkappa
+
+```
+
+#Steady state
+###Load packages
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+library(readr)
+library(tidyverse)
+```
+
+###Create graph growth rate
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+##Load data
+Steadystate <- read_csv("C://Users/Jimmy/Documents/Steadystatelonglong2.csv")
+
+##Plot of growth rate
+Growth <- ggplot(Steadystate, aes(x=Day, y = Growthrate, colour = Company)) + geom_line() + scale_x_continuous(breaks = c(0:9)) + labs (title = "Average growth rate for 10 randomly selected posts", subtitle = "Likes tracked every day after uploading", x = "Day", y = "Growth rate")
+```
+
+
+###Create graph absolute likes
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+
+##Load data
+library(readr)
+Steadystateabsolute <- read_csv("C://Users/Jimmy/Documents/Absolutesteady.csv")
+
+
+##Plot of absolute likes
+Absolute <- ggplot(Steadystateabsolute, aes(x=Day, y = Likes, colour = Company)) + geom_line() + labs (title = "Average amount of likes for 10 randomly selected posts", subtitle = "Likes tracked every day after uploading", x = "Day", y = "Amount of likes") + scale_x_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+
+```
+
+###Plot graphs
+```{r}
+Absolute
+Growth
+```
+
+#SUCCESs modelling
+###Load packages
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+
+library(dplyr)
+library(tidyverse)
+library(caret)
+```
+
+###Load dataset SUCCESs
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+library(readr)
+scriptie <- read_csv("C://Users/Jimmy/Documents/success.csv")
+
+```
+
+###Prepare features
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+###Replace NA's with 0
+scriptie_caret <- scriptie 
+
+scriptie_caret[is.na(scriptie_caret)] <- 0
+
+##Recode features
+scriptie_caret$simple <- factor(scriptie_caret$simple)
+scriptie_caret$unexpected1 <- factor(scriptie_caret$unexpected1)
+scriptie_caret$unexpected2 <- factor(scriptie_caret$unexpected2)
+scriptie_caret$concrete1 <- factor(scriptie_caret$concrete1)
+scriptie_caret$concrete2 <- factor(scriptie_caret$concrete2)
+scriptie_caret$credible1 <- factor(scriptie_caret$credible1)
+scriptie_caret$credible2 <- factor(scriptie_caret$credible2)
+scriptie_caret$emotional <- factor(scriptie_caret$emotional)
+scriptie_caret$emotional2 <- factor (scriptie_caret$emotional2)
+scriptie_caret$story <- factor(scriptie_caret$story)
+
+
+scriptie_caret$simple
+scriptie_caret$unexpected1
+scriptie_caret$unexpected2
+scriptie_caret$concrete1
+scriptie_caret$concrete2
+scriptie_caret$credible1
+scriptie_caret$credible2
+scriptie_caret$emotional
+scriptie_caret$emotional2
+scriptie_caret$story
+
+###Recode format
+scriptie_caret$format <- factor(scriptie_caret$format)
+scriptie_caret$format
+```
+###Train and test data
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+#Split up the dataset
+set.seed(1)
+
+scriptie_caret2 <- scriptie_caret
+
+train_scriptie_caret <- createDataPartition(scriptie_caret2$likes_div_page_followers_x_10000, p = 0.7)
+
+train_scriptie_caret$Resample1
+
+## Create the dataset
+scriptie_train_caret <- scriptie_caret2 %>% slice(train_scriptie_caret$Resample1)
+
+scriptie_test_caret <- scriptie_caret2 %>% slice(-train_scriptie_caret$Resample1)
+
+#Test dimensions
+dim(scriptie_train_caret)
+dim(scriptie_test_caret)
+
+##Log transform Y
+scriptie_train_caret$likes_div_page_followers_x_10000 <- log(scriptie_train_caret$likes_div_page_followers_x_10000)
+
+scriptie_test_caret$likes_div_page_followers_x_10000 <- log(scriptie_test_caret$likes_div_page_followers_x_10000)
+
+scriptie_train_caret$likes_div_page_followers_x_10000
+scriptie_test_caret$likes_div_page_followers_x_10000
+
+```
+
+###Test dimensions train and test set
+```{r}
+##Test dimensions
+dim(scriptie_train_caret)
+dim(scriptie_test_caret)
+```
+
+##OLS null model
+```{r warning=FALSE,message=FALSE, error=FALSE}
+set.seed(1)
+
+OLSnull <- lm(likes_div_page_followers_x_10000 ~ 1, data = scriptie_train_caret)
+
+summary(OLSnull)
+                 
+##Preds
+predictions5 <- as.data.frame(preds_OLSnull)
+
+cbind(predictions = 1.039395, predictions5)
+
+predictionsnull <- cbind(predictions0 = 1.039395, predictions5)
+
+##RMSE
+rmse_OLSnull <- sqrt(mean((predictionsnull$predictions0 - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+rmse_OLSnull
+```
+
+###Prepare train control
+```{r warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+caretcontrol <- trainControl(method ="repeatedcv",
+                             number = 10,
+                             repeats = 5,
+                             selectionFunction = "oneSE"
+                              )
+```
+
+###OLS model
+```{r warning=FALSE,message=FALSE, error=FALSE}
+set.seed(1)
+
+OLScaret <- train(likes_div_page_followers_x_10000 ~ simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story
+                  , 
+                  method = "lm",
+                  trControl = caretcontrol,
+                  data = scriptie_train_caret)
+
+##results
+OLScaret$results
+summary(OLScaret)
+
+##Variance inflation factor
+library(car)
+
+vif(lm(likes_div_page_followers_x_10000 ~ simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story, data = scriptie_train_caret))
+
+##predict
+preds_OLScaret <- predict(OLScaret, newdata = scriptie_test_caret)
+
+head(preds_OLScaret)
+
+##Plots
+plot(OLScaret$finalModel)
+
+##RMSE
+rmse_OLScaret <- sqrt(mean((preds_OLScaret - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+rmse_OLScaret
+
+
+```
+
+###OLS model + manually added interactions 
+```{r warning=FALSE,message=FALSE, error=FALSE}
+set.seed(1)
+
+OLScaret_interactionelab <- train(likes_div_page_followers_x_10000 ~ simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story + unexpected1:unexpected2 + emotional:emotional2 + credible2:emotional2 + unexpected2:story + concrete2:unexpected2, 
+                  method = "lm",
+                  trControl = caretcontrol,
+                  data = scriptie_train_caret)
+
+##predict
+preds_OLScaret_interactionelab <- predict(OLScaret_interactionelab, newdata = scriptie_test_caret)
+
+head(preds_OLScaret_interactionelab)
+
+##RMSE
+rmse_OLScaret_interactionelab <- sqrt(mean((preds_OLScaret_interactionelab - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+summary(OLScaret_interactionelab)
+
+rmse_OLScaret_interactionelab
+```
+
+##Interaction between story and unexpected2
+```{r}
+##Plot
+interaction <- scriptie_train_caret %>% group_by(unexpected2, story) %>% summarise(likes = mean(likes_div_page_followers_x_10000))
+
+interaction %>% ggplot() + aes(x=unexpected2, y=likes, colour = story) + geom_point() + geom_line(aes(group=story)) + labs(y = "mean standardized likes", title = "Interaction between story and unexpected2")
+```
+
+###Ridge regression
+```{r warning=FALSE,message=FALSE, error=FALSE}
+set.seed(1)
+
+#Tune grid
+ridge <- expand.grid(alpha = 0, 
+                        lambda = seq(0.00001, 0.03, length= 10))
+
+#Setup model
+Ridgecaretelab <- train(likes_div_page_followers_x_10000 ~ simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story + unexpected1:unexpected2 + emotional:emotional2 +  credible2:emotional2 + unexpected2:story + concrete2:unexpected2 , 
+                  method = "glmnet",
+                  tuneGrid = ridge,
+                  trControl = caretcontrol,
+                  data = scriptie_train_caret)
+
+Ridgecaretelab
+
+##Predict
+preds_Ridgecaretelab <- predict(Ridgecaretelab, newdata = scriptie_test_caret)
+
+head(preds_Ridgecaretelab)
+
+##RMSE
+rmse_Ridgecaretelab <- sqrt(mean((preds_Ridgecaretelab - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+##Plots
+plot(Ridgecaretelab)
+plot(Ridgecaretelab$finalModel, xvar = "lambda", label = T)
+plot(Ridgecaretelab$finalModel, xvar = "dev", label = T)
+plot(varImp(Ridgecaretelab))
+
+##RMSE
+coef(Ridgecaretelab$finalModel, s = Ridgecaretelab$bestTune$lambda)
+
+rmse_Ridgecaretelab
+```
+
+###Lasso regression
+```{r warning=FALSE,message=FALSE, error=FALSE}
+set.seed(1)
+
+#Tune grid
+lasso <- expand.grid(alpha = 1, 
+                        lambda = seq(0.000001, 0.005, length= 10))
+
+#Setup model
+Lassocaretelab <- train(likes_div_page_followers_x_10000 ~ simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story + unexpected1:unexpected2 + emotional:emotional2 + credible2:emotional2 + unexpected2:story + concrete2:unexpected2, 
+                  method = "glmnet",
+                  tuneGrid = lasso,
+                  trControl = caretcontrol,
+                  data = scriptie_train_caret)
+
+Lassocaretelab
+
+##Predict
+preds_Lassocaretelab <- predict(Lassocaretelab, newdata = scriptie_test_caret)
+
+head(preds_Lassocaretelab)
+
+##Plots
+plot(Lassocaretelab)
+plot(Lassocaretelab$finalModel, xvar = "lambda", label = T)
+plot(Lassocaretelab$finalModel, xvar = "dev", label = T)
+plot(varImp(Lassocaretelab))
+
+##RMSE
+rmse_Lassocaretelab <- sqrt(mean((preds_Lassocaretelab - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+rmse_Lassocaretelab
+```
+
+###Lasso regression all two-way interactions
+```{r warning=FALSE,message=FALSE, error=FALSE}
+set.seed(1)
+
+#Tune grid
+lasso <- expand.grid(alpha = 1,
+                        lambda = seq(0.00001, 0.035, length= 10))
+
+#Setup model
+Lassocaretall <- train(likes_div_page_followers_x_10000 ~ (simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story + format + score)^2, 
+                  method = "glmnet",
+                  tuneGrid = lasso,
+                  trControl = caretcontrol,
+                  data = scriptie_train_caret)
+
+Lassocaretall
+
+##Predict
+preds_Lassocaretall <- predict(Lassocaretall, newdata = scriptie_test_caret)
+
+head(preds_Lassocaretall)
+
+##Plots
+plot(Lassocaretall)
+plot(Lassocaretall$finalModel, xvar = "lambda", label = T)
+plot(Lassocaretall$finalModel, xvar = "dev", label = T)
+plot(varImp(Lassocaretall))
+
+##RMSE
+rmse_Lassocaretall <- sqrt(mean((preds_Lassocaretall - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+rmse_Lassocaretall
+```
+
+###Coefficients of the best regularized models
+```{r warning=FALSE,message=FALSE, error=FALSE}
+##Lasso 
+coef(Lassocaretelab$finalModel, s = Lassocaretelab$bestTune$lambda)
+
+##Ridge
+coef(Ridgecaretelab$finalModel, s = Ridgecaretelab$bestTune$lambda)
+
+```
+
+###Regression tree SUCCESs features
+```{r warning=FALSE,message=FALSE, error=FALSE, results = 'hide'}
+set.seed(1)
+
+##Tune grid
+rpart_grid <- expand.grid(cp = seq(0.00001, 0.02, 0.0001))
+
+##Build model
+Success_tree <- train(likes_div_page_followers_x_10000 ~simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story , data = scriptie_train_caret, method = "rpart", trControl = caretcontrol, tuneGrid = rpart_grid,
+                   tuneLength = 10)
+Success_tree
+
+##predict
+preds_Success_tree <- predict(Success_tree, newdata = scriptie_test_caret)
+
+head(preds_Success_tree)
+
+##RMSE
+rmse_Success_tree <- sqrt(mean((preds_Success_tree - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+rmse_Success_tree
+
+##plot
+library(rpart.plot)
+prp((Success_tree$finalModel), box.palette = "auto", branch.col=1)
+```
+
+###Regression tree SUCCESs features + format
+```{r warning=FALSE,message=FALSE, error=FALSE, results = 'hide'}
+set.seed(1)
+
+##Tune grid
+rpart_grid <- expand.grid(cp = seq(0.000001, 0.02 , 0.0001))
+
+##Build model
+Success_tree2 <- train(likes_div_page_followers_x_10000 ~simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story + format, data = scriptie_train_caret, method = "rpart", metric = "RMSE", trControl = caretcontrol, tuneGrid = rpart_grid,
+                   tuneLength = 10)
+Success_tree2
+
+##predict
+preds_Success_tree2 <- predict(Success_tree2, newdata = scriptie_test_caret)
+
+head(preds_Success_tree2)
+
+##RMSE
+rmse_Success_tree2 <- sqrt(mean((preds_Success_tree2 - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+rmse_Success_tree2
+
+##Plot
+library(rpart.plot)
+prp((Success_tree2$finalModel), box.palette = "auto", branch.col=1, fallen.leaves = TRUE)
+```
+
+###XGBoost manual interactions
+```{r warning=FALSE,message=FALSE, error=FALSE}
+##Load package and set seed
+library(xgboost)
+set.seed(1)
+
+
+##Tunegrid
+xgbGrid <- expand.grid(nrounds = c(1, 700),
+                       max_depth = c(1, 3, 6),
+                       eta = c(0.01, 0.05, 0.1, 0.3),
+                       gamma = c(0, 1),
+                       colsample_bytree = .7,
+                       min_child_weight = 1,
+                       subsample = c(.5, .8))
+
+##Build model
+xgboostsuccesscaretelab <- train(likes_div_page_followers_x_10000 ~simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story  + unexpected1:unexpected2 + emotional:emotional2 + credible2:emotional2 + unexpected2:story + concrete2:unexpected2, data = scriptie_train_caret, method = "xgbTree", trControl = caretcontrol,
+                   tuneGrid = xgbGrid)  
+
+##predict
+preds_xgboostsuccesscaretelab <- predict(xgboostsuccesscaretelab, newdata = scriptie_test_caret)
+
+head(preds_xgboostsuccesscaretelab)
+
+##RMSE
+rmse_xgboostsuccesscaretelab <- sqrt(mean((preds_xgboostsuccesscaretelab - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+rmse_xgboostsuccesscaretelab
+```
+
+###XGBoost caret all
+```{r warning=FALSE,message=FALSE, error=FALSE}
+##Load package and set seed
+library(xgboost)
+set.seed(1)
+
+##Tunegrid
+xgbGrid <- expand.grid(nrounds = c(1, 700),
+                       max_depth = c(1),
+                       eta = c(.3),
+                       gamma = 0,
+                       colsample_bytree = c(.7),
+                       min_child_weight = 1,
+                       subsample = .5)
+
+##Build model
+xgboostsuccesscaretall <- train(likes_div_page_followers_x_10000 ~simple + unexpected1 + unexpected2 + concrete1 + concrete2 + credible1 + credible2 + emotional + emotional2 + story + format, data = scriptie_train_caret, method = "xgbTree", trControl = caretcontrol,
+                   tuneGrid = xgbGrid)  
+
+##predict
+preds_xgboostsuccesscaretall <- predict(xgboostsuccesscaretall, newdata = scriptie_test_caret)
+
+head(preds_xgboostsuccesscaretall)
+
+##RMSE
+rmse_xgboostsuccesscaretall <- sqrt(mean((preds_xgboostsuccesscaretall - scriptie_test_caret$likes_div_page_followers_x_10000)^2))
+
+rmse_xgboostsuccesscaretall
+```
+
+###Compare models
+```{r warning=FALSE,message=FALSE, error=FALSE}
+##Create list
+model_list <- list('OLS model' = OLScaret, 'OLS manual interactions' = OLScaret_interactionelab, "Ridge manual interactions" = Ridgecaretelab, "Lasso manual interactions" = Lassocaretelab, "xgBoost" = xgboostsuccesscaretall, "xgBoost manual interactions" = xgboostsuccesscaretelab, 'Lasso all interactions' = Lassocaretall, "Regression tree" = Success_tree)
+
+res <- resamples(model_list)
+
+summary(res)
+
+##Plots
+xyplot(res, metric = "RMSE")
+dotplot(res, metric = "RMSE")
+```
+
+###Compare models 2
+```{r warning=FALSE,message=FALSE, error=FALSE}
+##Create list
+model_list2 <- list("Regression tree" = Success_tree, "xgBoost manual interactions" = xgboostsuccesscaretelab)
+
+res2 <- resamples(model_list2)
+
+summary(res2)
+
+##Plots
+xyplot(res2, metric = "RMSE")
+dotplot(res2, metric = "RMSE")
+```
+
+###Predictions in absolute terms
+```{r warning=FALSE,message=FALSE, error=FALSE}
+set.seed(1)
+
+##Predictions null model
+predictions5_1 <- exp(predictionsnull$predictions0)
+
+predictions5_2 <- predictions5_1/10000
+
+predictions5_3 <- predictions5_2*scriptie_test_caret$page_followers
+
+PredictionOLSnull2 <- sqrt(mean((scriptie_test_caret$likes - predictions5_3)^2)) 
+
+
+
+##Predictions Xgboost
+predictions1 <- as.data.frame(preds_xgboostsuccesscaretelab)
+
+predictions1_1 <- exp(predictions1)
+
+predictions1_2 <- predictions1_1/10000
+
+predictions1_3 <- predictions1_2*scriptie_test_caret$page_followers
+
+Predictionbest <- sqrt(mean((scriptie_test_caret$likes - predictions1_3)^2))  
+
+
+
+
+##Predictions OLS with SUCCESs features
+predictions2 <- as.data.frame(preds_OLScaret)
+
+predictions2_1 <- exp(predictions2)
+
+predictions2_2 <- predictions2_1/10000
+
+predictions2_3 <- predictions2_2*scriptie_test_caret$page_followers
+
+Predictionbaseline <- sqrt(mean((scriptie_test_caret$likes - predictions2_3)^2)) 
+
+
+##Predictions regression tree
+predictions3 <- as.data.frame(preds_Success_tree)
+
+predictions3_1 <- exp(predictions3)
+
+predictions3_2 <- predictions3_1/10000
+
+predictions3_3 <- predictions3_2*scriptie_test_caret$page_followers
+
+Predictiontree <- sqrt(mean((scriptie_test_caret$likes - predictions3_3)^2)) 
+
+
+
+##Predictions ridge
+predictions4 <- as.data.frame(preds_Ridgecaretelab)
+
+predictions4_1 <- exp(predictions4)
+
+predictions4_2 <- predictions4_1/10000
+
+predictions4_3 <- predictions4_2*scriptie_test_caret$page_followers
+
+Predictionridge <- sqrt(mean((scriptie_test_caret$likes - predictions4_3)^2)) 
+
+
+```
+
+###Actual vs predicted plots
+```{r warning=FALSE,message=FALSE, error=FALSE}
+library(gridExtra)
+
+##prediction plot null model
+nullnull <- as.data.frame(predictions5_3)
+
+Fitplot3 <- cbind(nullnull, scriptie_test_caret$likes)
+
+Nullplot <- ggplot(Fitplot3, aes(x = scriptie_test_caret$likes, y = predictions5_3)) + geom_point(colour = "red") + scale_x_continuous(limits = c(0, 2000)) + scale_y_continuous(limits = c(0,2000)) + labs(x = "Actual values", y = "Predicted values", title = "Null model") + geom_abline(size = 1)
+
+
+#prediction plot xgboost
+Fitplot <- cbind(predictions1_3, scriptie_test_caret$likes)
+
+Boostplot <- ggplot(Fitplot, aes(x = scriptie_test_caret$likes , y = preds_xgboostsuccesscaretelab)) + geom_point(colour = "blue") + scale_x_continuous(limits = c(0, 2000)) + scale_y_continuous(limits = c(0,2000)) + labs(x = "Actual values", y = "Predicted values", title = "xgBoost") + geom_abline(size = 1)
+
+##prediction plot regression tree
+Fitplot2 <- cbind(predictions3_3, scriptie_test_caret$likes)
+
+Treeplot <- ggplot(Fitplot2, aes(x = scriptie_test_caret$likes , y = preds_Success_tree )) + geom_point(colour = "green4") + scale_x_continuous(limits = c(0, 2000)) + scale_y_continuous(limits = c(0,2000)) + labs(x = "Actual values", y = "Predicted values", title = "Regression tree") + geom_abline(size = 1)
+
+##Predictionplot ridge
+Fitplot4 <- cbind(predictions4_3, scriptie_test_caret$likes)
+
+Ridgeplot <- ggplot(Fitplot4, aes(x = scriptie_test_caret$likes , y = preds_Ridgecaretelab )) + geom_point(colour = "deepskyblue3") + scale_x_continuous(limits = c(0, 2000)) + scale_y_continuous(limits = c(0,2000)) + labs(x = "Actual values", y = "Predicted values", title = "Ridge regression") + geom_abline(size = 1)
+```
+
+###Plot all plots
+```{r warning=FALSE,message=FALSE, error=FALSE}
+##load package
+library(grid)
+##set up title
+full_title <- textGrob("Actual vs predicted plots", gp=gpar(fontsize = 16))
+
+##plot
+Plottheplots <- grid.arrange(Nullplot, Ridgeplot, Treeplot, Boostplot, nrow = 2, top = full_title)
+```
+
+
