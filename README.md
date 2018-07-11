@@ -1,2 +1,2 @@
 # thesis
-Master thesis SUCCESs
+Code for the thesis
